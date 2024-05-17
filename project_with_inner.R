@@ -1,0 +1,131 @@
+library(haven)
+
+Demographic<-read_xpt(file.choose())
+Cholesterol<-read_xpt(file.choose())
+# now lets merge them together
+merge1<-inner_join(Demographic, Cholesterol,by = "SEQN")
+summary(merge1)
+Weight<-read_xpt(file.choose())
+alcohol<-read_xpt(file.choose())
+smoking<-read_xpt(file.choose())
+physicalactivity<-read_xpt(file.choose())
+merge2<-inner_join(alcohol, smoking,by = "SEQN")
+merge3<-inner_join(physicalactivity, Weight, by="SEQN")
+merge4<-inner_join(merge1,merge2, by = "SEQN")
+merge5<-inner_join(merge4,merge3, by = "SEQN")
+attach(merge5)
+
+install.packages("tidyverse")
+library(tidyverse)
+head(merge5)
+#colnames(merge5)[colnames(merge5) %in% c("LBXTC", "RIAGENDR", "RIDAGEYR", "RIDRETH3", "SMQ040", "PAQ650", "ALQ121", "BMXWT")] <-c("Total Cholesterol", "gender", "age", "race", "smoke currently", "recreational activity", "drink freq", "weight" )
+new_merge <- merge5 %>% 
+  rename(
+    Total_Cholesterol = LBXTC,
+    gender = RIAGENDR,
+    age = RIDAGEYR,
+    race = RIDRETH3,
+    smoke_currently = SMQ040,
+    recreational_activity = PAQ650,
+    drink_freq = ALQ121,
+    BMI = BMXBMI)
+attach(new_merge)
+#race<-merge5$age
+#gender<-merge5$`Total Cholesterol`
+#age<-merge5$gender
+#totalcholesterol<-merge5$race
+#drinkfreq<-merge5$`smoke currently`
+#smokecurrent<-merge5$`recreational activity`
+#recreationalactivity<-merge5$`drink freq`
+#weight<-merge5$`weight (kg)`
+
+myproject<-data.frame(cbind(age,drinkfreq,gender,race, recreationalactivity, smokecurrent, totalcholesterol, BMI))
+attach(myproject)
+data1<-data.frame(row.names = race, gender, age, totalcholesterol, drinkfreq, smokecurrent, recreationalactivity, weight))
+myproject$male<- ifelse(myproject$gender==1,1,0)
+myproject$exercise<- ifelse(myproject$recreationalactivity==1,1,0)
+reg1<-lm(myproject$totalcholesterol~myproject$age+myproject$smokecurrent+myproject$male+myproject$exercise+myproject$BMI+myproject$drinkfreq)
+summary(reg1)
+summary(myproject$drinkfreq)
+max(drinkfreq)
+table(myproject$race)
+myproject$white<-ifelse(myproject$race==3,1,0)
+table(myproject$white)
+myproject$black<-ifelse(myproject$race==4,1,0)
+myproject$asian<-ifelse(myproject$race==6,1,0)
+table(myproject$black)
+table(myproject$asian)
+myproject$mexicanam<-ifelse(myproject$race==1,1,0)
+table(myproject$mexicanam)
+#hispanic as group refrence 
+table(myproject$drinkfreq)
+myproject$drinkfreq[myproject$drinkfreq  == "77"]<-NA
+table(myproject$drinkfreq)
+myproject$drinkfreq[myproject$drinkfreq  == "99"]<-NA
+table(myproject$drinkfreq)
+myproject$drinkeveryday<-ifelse(myproject$drinkfreq==1,1,0)
+table(myproject$drinkeveryday)
+regsam<-lm(myproject$totalcholesterol~myproject$white+myproject$black+myproject$asian+myproject$mexicanam+myproject$male+myproject$BMI+myproject$age+myproject$drinkno+ myproject$drinkeveryday+myproject$smokedaily+myproject$smokesomedays)
+summary(regsam)
+table(myproject$smokecurrent)
+myproject$smokedaily<-ifelse(myproject$smokecurrent==1,1,0)
+myproject$smokesomedays<-ifelse(myproject$smokecurrent==2,1,0)
+attach(myproject)
+table(drinkeveryday)/length(drinkeveryday)
+mean(age)
+mean(white)
+mean(black)
+mean(asian)
+max(asian)
+min(asian)
+summary(totalcholesterol)
+min(totalcholesterol,na.rm = TRUE)
+max(totalcholesterol,na.rm = TRUE)
+mean(totalcholesterol,na.rm = TRUE)
+median(totalcholesterol,na.rm = TRUE)
+var(totalcholesterol,na.rm = TRUE)
+var(totalcholesterol)
+sd(totalcholesterol,na.rm = TRUE)
+table(totalcholesterol)
+min(age)
+max(age)
+mean(age)
+median(age)
+var(age, na.rm = TRUE)
+sd(age,na.rm = TRUE)
+sd(age)
+min(BMI,na.rm = TRUE)
+max(BMI,na.rm = TRUE)
+mean(BMI,na.rm = TRUE)
+median(BMI,na.rm = TRUE)
+var(BMI, na.rm = TRUE)
+sd(BMI,na.rm = TRUE)
+sd(BMI)
+min(male)
+summary(male)
+sd(male)
+table(male)
+var(male)
+(table(male))/100
+sum(prop.table(male))
+table(male)/length(male)
+table(exercise)/length(exercise)
+table(mexicanam)/length(mexicanam)
+table(asian)/length(asian)
+table(black)/length(black)
+table(white)/length(white)
+table(drinkno)/length(drinkno)
+table(drinkeveryday)/length(drinkeveryday)
+table(smokedaily)/length(smokedaily)
+table(smokesomedays)/length(smokesomedays)
+table(smokedaily)
+reg1<-lm(totalcholesterol~BMI+age+male+exercise+white+black+asian+mexicanam+drinkeveryday+drinkno+smokedaily+smokesomedays)
+summary(reg1)
+reg2<-lm(totalcholesterol~BMI+age)
+summary(reg2)
+install.packages("car")
+library(car)
+nullhypo<-c("male","exercise","white","black","asian","mexicanam","drinkeveryday","drinkno","smokedaily","smokesomedays")
+linearHypothesis(reg1, nullhypo)
+cor(age,BMI, na.exclude(age,BMI))
+vif(reg1)
